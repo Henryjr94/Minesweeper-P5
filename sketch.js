@@ -6,6 +6,7 @@ let firstClick = true
 //class responsible for creating and rendering the board
 //difficulty: string (easy, normal or hard) 
 class Board {
+
     constructor(difficulty) {        
 
         switch (difficulty) {
@@ -27,7 +28,9 @@ class Board {
         }
     }
     
-    //generate a "map" by using the provided x & y coordinates in the difficulty
+    /**
+     * Generate a "map" by using the provided x & y coordinates in the difficulty
+     */
     mapGeneration(){
         for (let i = 0; i < this.width; i++) {
     
@@ -49,7 +52,11 @@ class Board {
         }
     }
 
-    //defines where mines should go
+    /**
+     * Defines where mines should go by running a loop that chooses a random cell, if the cell is not a mine
+     * it's flagged as a mine, else it adds 1 to the loop counter.
+     * Might need a rework for a custom difficulty so it doesnt loop too many times if the mine/empty cell ratio is too high
+     */
     minePlacement() {
         let noEmptySpaces = false
         
@@ -65,6 +72,7 @@ class Board {
             }
         }
 
+        // define the number of nearby mine on every cell
         for (let i = 0; i < this.width; i++){
             for(let j = 0; j < this.height; j++){
                 this.checkNear(i,j,false)
@@ -115,7 +123,12 @@ class Board {
 
     }
 
-    //aligns text in the middle of a cell
+    /**
+     * aligns text in the middle of a cell, recieves the top left position pf a cell
+     * @param {Text} textInput  Text to be aligned
+     * @param {Number} xPos     horizontal position of the cell
+     * @param {Number} yPos     vertical position of the cell
+     */
     textCenterCell(textInput, xPos, yPos){
         fill("black")
         textAlign(CENTER, CENTER)
@@ -123,7 +136,14 @@ class Board {
         text(textInput, (xPos*cellSize)+cellSize*0.1, yPos*cellSize+cellSize*0.6,cellSize) 
     }
 
-    //check adjecent cells for mines, if any adds to the mine counter
+    /**
+     * check adjecent cells for mines, if any adds to the mine counter,
+     * on click it also opens adjecent empty cells
+     * @param {Interger} xPos       Horizontal index of the cell.
+     * @param {Interger} yPos       Vertical Index of the cell.
+     * @param {Boolean} isClick     If it's used on a click or not.
+     * @returns                     True if any empty cells were found
+     */
     checkNear(xPos, yPos, isClick){
         let mineNearby = false
         let cellDirection = []
@@ -162,10 +182,13 @@ class Board {
         return mineNearby
     }
 
-    //draws every square in the board by looping width by height
+    /**
+     * draws every square in the board by looping width by height
+     */
     draw(){
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) {
+                //check if the cell has been clicked (.isActive)
                 if (mapIndex[i][j].isActive) {  
                     if (mapIndex[i][j].isMine){
                         this.textCenterCell("x", i, j)
@@ -174,7 +197,8 @@ class Board {
                     }
 
                     noFill()
-
+                
+                //check if the cell is a mine or is flagged
                 } else {
                     if (mapIndex[i][j].isMine){
                         this.textCenterCell("x", i, j)
@@ -184,8 +208,7 @@ class Board {
                     if (!mapIndex[i][j].flag)
                     fill("blue")     
                     else if (mapIndex[i][j].flag)
-                    fill("red")
-                    //noFill()           
+                    fill("red")          
                 }
 
                 rect(i*cellSize,j*cellSize,cellSize,cellSize)
@@ -194,11 +217,15 @@ class Board {
     }
 }
 
-//check mouse X/Y position to see if it's the same as the area defined
-//return: Bool || xPos, yPos, xArea: int || yArea: int(optional)
+/**
+ * check mouse X/Y position to see if it's the same as the area defined
+ * @param {Interger} xPos  Horizontal position of the cell being checked
+ * @param {Interger} yPos  Vertical position of the cell being checked
+ * @param {Interger} xArea Horizontal size of the cell
+ * @param {Interger} yArea (optional)Vertical size of the cell, if empty it uses xArea instead
+ */
 function mouseCollision(xPos, yPos, xArea, yArea) {
 
-    //if yArea is undefined, it uses xArea as a square
     if (yArea != undefined){        
         if(mouseX > xPos*xArea && mouseX <= (xPos*xArea)+xArea) {
 
@@ -219,7 +246,9 @@ function mouseCollision(xPos, yPos, xArea, yArea) {
     return false
 }
 
+//mouse click functions
 function mousePressed() {
+    //on right click it "opens" a cell, if already activated it does nothing
     if (mouseButton == LEFT){
         let currentGroup
         //scan for the cell clicked by looping and checking mouse collision
@@ -251,6 +280,8 @@ function mousePressed() {
     
             }
         }
+
+    //right clicks on flag cells as mines, if the cell is already flagged it removes it instead
     } else if (mouseButton == RIGHT){
         for (let i = 0; i < stage.width; i++) {
             for (let j = 0; j < stage.height; j++) {
